@@ -18,7 +18,7 @@ const app = exp()
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://your-frontend-domain.vercel.app"
+    "https://careconnect-pied-nine.vercel.app"
   ],
   credentials: true
 }))
