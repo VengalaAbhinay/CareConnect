@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.input-field {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.925rem;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input-field::placeholder {
+  color: #94a3b8;
+}
+.input-field:focus {
+  border-color: var(--color-brand-600);
+  box-shadow: 0 0 0 4px rgb(20 184 166 / 0.15);
+}
+.input-field.has-error {
+  border-color: #f87171;
+}
+.input-field.has-error:focus {
+  box-shadow: 0 0 0 4px rgb(248 113 113 / 0.15);
+}
+
+.btn-primary {
+  width: 100%;
+  border-radius: 0.75rem;
+  background: var(--color-brand-600);
+  padding: 0.7rem 1rem;
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(15 118 110 / 0.3);
+  transition: background 0.15s, transform 0.05s;
+  cursor: pointer;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-brand-700);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

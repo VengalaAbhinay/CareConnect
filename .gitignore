@@ -1,0 +1,34 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# dotenv environment variable files
+.env
+.env.test
+.env.production
+.env.local
+.env.*.local
+
+# Vite and React output
+dist/
+dist-ssr/
+build/
+
+# Mac OS files
+.DS_Store
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
