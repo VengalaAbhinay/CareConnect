@@ -127,11 +127,15 @@ export default function Register() {
               id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              placeholder="At least 6 characters"
+              placeholder="At least 8 characters, with a letter and a number"
               className={`input-field pr-16 ${errors.password ? 'has-error' : ''}`}
               {...register('password', {
                 required: 'Password is required',
-                minLength: { value: 6, message: 'Password must be at least 6 characters' },
+                minLength: { value: 8, message: 'Password must be at least 8 characters' },
+                pattern: {
+                  value: /^(?=.*[A-Za-z])(?=.*\d).+$/,
+                  message: 'Password must include at least one letter and one number',
+                },
               })}
             />
             <button

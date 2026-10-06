@@ -4,7 +4,9 @@ import axiosInstance from '../api/axiosInstance.js'
 export const useBookingStore = create((set, get) => ({
   bookings: [],
   activeBooking: null,
-  disputes: [],
+  activeBookingInvoice: null,
+  activeBookingReview: null,
+  activeBookingCases: [],
   isLoading: false,
 
   fetchBookings: async (params = {}) => {
@@ -19,7 +21,12 @@ export const useBookingStore = create((set, get) => ({
   },
   fetchBooking: async (id) => {
     const res = await axiosInstance.get(`/booking-api/${id}`)
-    set({ activeBooking: res.data.booking })
+    set({
+      activeBooking: res.data.booking,
+      activeBookingInvoice: res.data.invoice,
+      activeBookingReview: res.data.review,
+      activeBookingCases: res.data.cases || [],
+    })
     return res.data.booking
   },
   createBooking: async (payload) => {
@@ -37,29 +44,45 @@ export const useBookingStore = create((set, get) => ({
     set({ activeBooking: res.data.booking })
     return res.data.booking
   },
+  rejectCompletion: async (id, reason) => {
+    const res = await axiosInstance.put(`/booking-api/${id}/reject-completion`, { reason })
+    set({ activeBooking: res.data.booking })
+    return res.data.booking
+  },
   cancelBooking: async (id, reason) => {
     const res = await axiosInstance.put(`/booking-api/${id}/cancel`, { reason })
     set({ activeBooking: res.data.booking })
     return res.data.booking
   },
-  submitReview: async (id, payload) => {
-    const res = await axiosInstance.post(`/booking-api/${id}/review`, payload)
-    return res.data.review
+  rescheduleBooking: async (id, payload) => {
+    const res = await axiosInstance.put(`/booking-api/${id}/reschedule`, payload)
+    set({ activeBooking: res.data.booking })
+    return res.data.booking
   },
-  raiseDispute: async (id, reason) => {
-    const res = await axiosInstance.post(`/booking-api/${id}/dispute`, { reason })
-    return res.data.dispute
+  reassignBooking: async (id, payload) => {
+    const res = await axiosInstance.put(`/booking-api/${id}/reassign`, payload)
+    set({ activeBooking: res.data.booking })
+    return res.data.booking
   },
 
-  /* ---------- disputes (admin / ops / support) ---------- */
-  fetchAllDisputes: async (params = {}) => {
-    const res = await axiosInstance.get('/booking-api/disputes/all', { params })
-    set({ disputes: res.data.disputes })
-    return res.data.disputes
+  /* ---------- reviews ---------- */
+  submitReview: async (id, payload) => {
+    const res = await axiosInstance.post(`/booking-api/${id}/review`, payload)
+    set({ activeBookingReview: res.data.review })
+    return res.data.review
   },
-  resolveDispute: async (id, payload) => {
-    const res = await axiosInstance.put(`/booking-api/disputes/${id}`, payload)
-    set({ disputes: get().disputes.map((d) => (d._id === id ? res.data.dispute : d)) })
-    return res.data.dispute
+  editReview: async (id, payload) => {
+    const res = await axiosInstance.put(`/booking-api/${id}/review`, payload)
+    set({ activeBookingReview: res.data.review })
+    return res.data.review
+  },
+  deleteReview: async (id) => {
+    await axiosInstance.delete(`/booking-api/${id}/review`)
+    set({ activeBookingReview: null })
+  },
+  replyToReview: async (id, text) => {
+    const res = await axiosInstance.put(`/booking-api/${id}/review/reply`, { text })
+    set({ activeBookingReview: res.data.review })
+    return res.data.review
   },
 }))

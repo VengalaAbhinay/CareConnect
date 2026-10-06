@@ -53,9 +53,22 @@ export const useServiceStore = create((set, get) => ({
     set({ requests: [res.data.request, ...get().requests] })
     return res.data.request
   },
-  cancelRequest: async (id) => {
-    const res = await axiosInstance.put(`/service-api/requests/${id}/cancel`)
+  updateRequest: async (id, payload) => {
+    const res = await axiosInstance.put(`/service-api/requests/${id}`, payload)
     set({ requests: get().requests.map((r) => (r._id === id ? res.data.request : r)) })
+    return res.data.request
+  },
+  cancelRequest: async (id, reason) => {
+    const res = await axiosInstance.put(`/service-api/requests/${id}/cancel`, { reason })
+    set({ requests: get().requests.map((r) => (r._id === id ? res.data.request : r)) })
+    return res.data.request
+  },
+  deleteRequest: async (id) => {
+    await axiosInstance.delete(`/service-api/requests/${id}`)
+    set({ requests: get().requests.filter((r) => r._id !== id) })
+  },
+  inviteProvider: async (id, providerId) => {
+    const res = await axiosInstance.post(`/service-api/requests/${id}/invite`, { providerId })
     return res.data.request
   },
   classify: async (description, requestId) => {
@@ -76,6 +89,11 @@ export const useServiceStore = create((set, get) => ({
   },
   submitQuote: async (payload) => {
     const res = await axiosInstance.post('/service-api/quotes', payload)
+    return res.data.quote
+  },
+  updateQuote: async (id, payload) => {
+    const res = await axiosInstance.put(`/service-api/quotes/${id}`, payload)
+    set({ myQuotes: get().myQuotes.map((q) => (q._id === id ? res.data.quote : q)) })
     return res.data.quote
   },
   fetchMyQuotes: async (params = {}) => {

@@ -3,16 +3,23 @@ import { connect } from 'mongoose'
 import cookieParser from 'cookie-parser'
 import { config } from 'dotenv'
 import cors from "cors"
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 import { userApp } from './API/UserAPI.js'
 import { providerApp } from './API/ProviderAPI.js'
 import { serviceApp } from './API/ServiceAPI.js'
 import { bookingApp } from './API/BookingAPI.js'
+import { invoiceApp } from './API/InvoiceAPI.js'
+import { supportApp } from './API/SupportAPI.js'
+import { uploadApp } from './API/UploadAPI.js'
 import { adminApp } from './API/AdminAPI.js'
 import { notificationApp } from './API/NotificationAPI.js'
+import { UPLOAD_DIR } from './middlewares/upload.js'
 
 config()  // process.env.PORT, process.env.DB_URL
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = exp()
 
 app.use(cors({
@@ -29,11 +36,17 @@ app.use(exp.json())
 // cookie parser middleware
 app.use(cookieParser())
 
+// serve uploaded evidence/documents (filenames are random hex, so the name is the capability)
+app.use('/uploads', exp.static(UPLOAD_DIR))
+
 // forward req to sub-apps based on path
 app.use("/user-api", userApp)
 app.use("/provider-api", providerApp)
 app.use("/service-api", serviceApp)
 app.use("/booking-api", bookingApp)
+app.use("/invoice-api", invoiceApp)
+app.use("/support-api", supportApp)
+app.use("/upload-api", uploadApp)
 app.use("/admin-api", adminApp)
 app.use("/notification-api", notificationApp)
 
@@ -61,6 +74,10 @@ app.use((err, req, res, next) => {
   }
   if (err.name === 'CastError') {
     return res.status(400).json({ message: "Error occured", error: err.message })
+  }
+  if (err.status === 400) {
+    // e.g. multer file-type/size rejection
+    return res.status(400).json({ message: err.message })
   }
   console.log(err)
   res.status(500).json({ message: "error occured", error: "Server side error" })

@@ -1,3 +1,6 @@
+import { useRef, useState } from 'react'
+import axiosInstance from '../../api/axiosInstance.js'
+
 export function Badge({ children, tone = 'slate' }) {
   const tones = {
     slate: 'bg-slate-100 text-slate-700',
@@ -16,10 +19,11 @@ export function Badge({ children, tone = 'slate' }) {
 
 const STATUS_TONES = {
   open: 'blue', quoted: 'amber', booked: 'brand', cancelled: 'red', closed: 'slate',
-  scheduled: 'blue', inProgress: 'amber', completed: 'green', disputed: 'red',
-  pending: 'amber', accepted: 'green', rejected: 'red',
-  verified: 'green', investigating: 'amber', resolved: 'green',
+  scheduled: 'blue', inProgress: 'amber', awaitingConfirmation: 'amber', completed: 'green', disputed: 'red',
+  pending: 'amber', accepted: 'green', rejected: 'red', withdrawn: 'slate',
+  verified: 'green', investigating: 'amber', escalated: 'red', resolved: 'green',
   active: 'green', inactive: 'red',
+  draft: 'slate', issued: 'amber', paid: 'green', void: 'slate', partiallyRefunded: 'amber', refunded: 'blue',
 }
 
 export function StatusBadge({ status }) {
@@ -114,6 +118,69 @@ export function StarRating({ value = 0, size = 'sm' }) {
           <path d="M10 1.5l2.6 5.3 5.9.8-4.3 4.1 1 5.8L10 14.7l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z" />
         </svg>
       ))}
+    </div>
+  )
+}
+
+export function fileUrl(u) {
+  if (!u) return u
+  return u.startsWith('http') ? u : `${axiosInstance.defaults.baseURL}${u}`
+}
+
+export function Money({ value }) {
+  const n = Number(value || 0)
+  return <>₹{n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</>
+}
+
+// Uploads one or more files to /upload-api and hands the resulting URLs back via onUploaded.
+// Kept deliberately simple: a native file input styled as a button, a small progress state,
+// and a list of what's attached so far with a remove affordance.
+export function FileUpload({ files = [], onUploaded, onRemove, label = 'Attach files', multiple = true, accept = 'image/*,.pdf' }) {
+  const [busy, setBusy] = useState(false)
+  const inputRef = useRef(null)
+
+  const handleChange = async (e) => {
+    const chosen = Array.from(e.target.files || [])
+    if (chosen.length === 0) return
+    setBusy(true)
+    try {
+      const formData = new FormData()
+      chosen.forEach((f) => formData.append('files', f))
+      const res = await axiosInstance.post('/upload-api', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      onUploaded?.(res.data.files || [])
+    } catch {
+      // the axios interceptor already surfaces the error toast
+    } finally {
+      setBusy(false)
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2">
+        {files.map((f, i) => (
+          <span key={f.url || i} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 py-1 pl-2.5 pr-1.5 text-xs font-medium text-slate-700">
+            <a href={fileUrl(f.url)} target="_blank" rel="noreferrer" className="max-w-[9rem] truncate hover:underline">
+              {f.name || f.url}
+            </a>
+            {onRemove && (
+              <button type="button" onClick={() => onRemove(i)} className="rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700" aria-label="Remove attachment">
+                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+            )}
+          </span>
+        ))}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+          className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-700 disabled:opacity-50"
+        >
+          {busy ? 'Uploading…' : `+ ${label}`}
+        </button>
+        <input ref={inputRef} type="file" multiple={multiple} accept={accept} onChange={handleChange} className="hidden" />
+      </div>
     </div>
   )
 }
